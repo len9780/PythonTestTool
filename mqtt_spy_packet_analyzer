@@ -1,0 +1,73 @@
+import xml.etree.ElementTree as ET
+import time
+#from datetime import datetime
+import datetime  
+import matplotlib.pyplot as plt
+import csv
+import base64
+import json
+
+# X轴数据
+#x = [1, 2, 3, 4, 5]
+
+# Y轴数据
+#y = [2, 4, 6, 8, 10]
+
+# 绘制折线图
+#plt.plot(x, y,'ro-')
+
+# 添加标题和轴标签
+#plt.title('line graph')
+#plt.xlabel('X轴')
+#plt.ylabel('Y轴')
+
+# 显示图形
+#plt.show(block=False)
+#plt.show()
+
+
+with open('inveter_data.xml', 'r') as file:
+    # 逐行输出
+    line_count= 0
+    for line in file:
+        # 去除行尾的换行符
+        line = line.rstrip()
+        root = ET.fromstring(line)
+        #mqtt_message = root.find('MqttMessage').attrib
+        # 读取单独的数据
+        #id_value = mqtt_message.get('id')
+        #timestamp_value = mqtt_message.get('timestamp')
+        #topic_value = mqtt_message.get('topic')
+        # 输出当前行
+        #print(root.attrib['timestamp'])
+        dt = datetime.datetime.fromtimestamp(int(root.attrib['timestamp']) / 1000.0)  # 需要将毫秒转换为秒
+        # print(root.attrib['id'],root.attrib['timestamp'],':', dt.strftime('%Y-%m-%d %H:%M:%S'))
+        # print(root.text)
+        json_format_dat = base64.b64decode(root.text)
+        # print(json_format_dat.decode())
+        json_dat = json.loads(json_format_dat.decode('latin-1'))
+        # print(type(json_dat),json_dat)
+        # print(root.attrib['id'],root.attrib['timestamp'],':', dt.strftime('%Y-%m-%d %H:%M:%S'),':',json_dat['heap_size'])
+        # print(base64.b64decode(root.text),end='\n')
+        if('B_R_Battery' in json_dat['vals']):
+            print([json_dat['vals']['B_R_Battery'],json_dat['vals']['B_W']])
+        line_count = line_count+1
+        with open('invereter.csv', 'a', newline='') as csvfile:
+                        csvwrite = csv.writer(csvfile)
+                        # csvwrite.writerow([root.attrib['timestamp'],root.attrib['heap_size']])
+                        # csvwrite.writerow([root.attrib['id'],root.attrib['timestamp'], dt.strftime('%Y-%m-%d %H:%M:%S'),json_dat['heap_size']])
+                        # csvwrite.writerow([dt.strftime('%Y-%m-%d %H:%M:%S'),json_dat['heap_size']])
+                        if('B_R_Battery' in json_dat['vals']):
+                             csvwrite.writerow([dt.strftime('%Y-%m-%d %H:%M:%S'),json_dat['vals']['B_R_Battery'],json_dat['vals']['B_W']])
+                            #  csvwrite.writerow([dt.strftime('%Y-%m-%d %H:%M:%S'),json_dat['vals']['B_R_Battery'],])
+    print("line counts is ",line_count)
+
+
+        
+
+
+# 将datetime对象转换为指定格式的时间字符串
+#time_str = dt.strftime('%Y-%m-%d %H:%M:%S')  # 格式可以根据需要自定义
+
+# 输出时间字符串
+#print(time_str)
